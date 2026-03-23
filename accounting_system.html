@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AccoSys — Accounting System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F3EE;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE6;
+    --border: #E2DDD4;
+    --border2: #CBC4B8;
+    --text: #1A1714;
+    --text2: #6B6358;
+    --text3: #9E9488;
+    --accent: #0e3b29;
+    --accent-light: #D8EDDF;
+    --accent-text: #31db94e7;
+    --gold: #B5860D;
+    --gold-light: #FDF3D8;
+    --red: #8B1A1A;
+    --red-light: #FDEAEA;
+    --blue: #1A3A5C;
+    --blue-light: #E3EDF7;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
+
+  /* ── Layout ── */
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 230px; flex-shrink: 0;
+    background: var(--accent);
+    display: flex; flex-direction: column;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .sidebar::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+  .sidebar-brand {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+  }
+  .sidebar-brand .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #fff;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .sidebar-brand .tagline { font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .nav-group { padding: 8px 12px 4px; }
+  .nav-group-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 8px; margin-bottom: 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.65);
+    cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+  .nav-item.active { background: rgba(255,255,255,0.13); color: #fff; font-weight: 500; }
+  .nav-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 20px; background: #7EC8A0; border-radius: 0 2px 2px 0;
+  }
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; opacity: 0.8; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 11px; color: rgba(255,255,255,0.3);
+  }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text); letter-spacing: -0.3px; }
+  .topbar-date { font-size: 12px; color: var(--text3); background: var(--surface2); padding: 4px 10px; border-radius: 20px; }
+  .topbar-right { display: flex; gap: 8px; align-items: center; }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #15382A; box-shadow: 0 2px 8px rgba(27,67,50,0.3); }
+  .btn-outline { background: var(--surface); color: var(--text); border: 1px solid var(--border2); }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #F5C6C6; }
+  .btn-danger:hover { background: #FAD5D5; }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-print { background: var(--gold-light); color: var(--gold); border: 1px solid #EFD897; }
+  .btn-print:hover { background: #FBE9A0; }
+
+  /* ── Metric Cards ── */
+  .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-bottom: 24px; }
+  .metric-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px;
+    box-shadow: var(--shadow);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .metric-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .metric-card.accent { background: var(--accent); border-color: var(--accent); }
+  .metric-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .metric-card.accent .metric-label { color: rgba(255,255,255,0.55); }
+  .metric-value { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); letter-spacing: -0.5px; line-height: 1; }
+  .metric-card.accent .metric-value { color: #fff; }
+  .metric-value.green { color: var(--accent); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.gold { color: var(--gold); }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .metric-card.accent .metric-sub { color: rgba(255,255,255,0.4); }
+
+  /* ── Table ── */
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+  .table-card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .table-card-title { font-weight: 600; font-size: 13px; color: var(--text); }
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    text-align: left; padding: 10px 16px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--text3); background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tbody tr { transition: background 0.1s; }
+  .data-table tbody tr:hover td { background: var(--surface2); }
+  .data-table .amount { font-family: 'DM Serif Display', serif; font-size: 15px; letter-spacing: -0.3px; }
+  .data-table .muted { color: var(--text3); font-size: 12px; }
+  .empty-row td { text-align: center; color: var(--text3); padding: 40px 16px !important; font-style: italic; }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  .badge-paid { background: var(--accent-light); color: var(--accent-text); }
+  .badge-pending { background: var(--gold-light); color: var(--gold); }
+  .badge-overdue { background: var(--red-light); color: var(--red); }
+  .badge-info { background: var(--blue-light); color: var(--blue); }
+  .badge-gray { background: var(--surface2); color: var(--text2); }
+
+  /* ── Forms / Modal ── */
+  .modal-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(26,23,20,0.45); backdrop-filter: blur(2px);
+    z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius-lg);
+    border: 1px solid var(--border); padding: 28px;
+    width: 520px; max-width: 95vw; max-height: 88vh; overflow-y: auto;
+    box-shadow: var(--shadow-md);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .modal-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--text); }
+  .modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; padding: 4px; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.03em; }
+  .form-control {
+    padding: 9px 12px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border2); border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(27,67,50,0.1); }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  /* ── Journal entries ── */
+  .journal-entry {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 14px;
+    box-shadow: var(--shadow);
+  }
+  .je-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .je-ref { font-weight: 600; font-size: 14px; color: var(--text); }
+  .je-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .je-lines { border-top: 1px solid var(--border); padding-top: 10px; }
+  .je-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+  .je-account { color: var(--text2); }
+  .je-account.indent { padding-left: 20px; color: var(--text3); font-style: italic; }
+  .je-dr { color: var(--accent); font-weight: 600; font-family: 'DM Serif Display', serif; font-size: 15px; }
+  .je-cr { color: var(--text3); font-family: 'DM Serif Display', serif; font-size: 15px; }
+  .je-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--text3); }
+
+  /* ── Trial Balance ── */
+  .tb-total-row td { font-weight: 600; background: var(--surface2) !important; border-top: 2px solid var(--border2) !important; }
+
+  /* ── P&L ── */
+  .pl-wrapper { max-width: 680px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px 48px; box-shadow: var(--shadow-md); }
+  .pl-letterhead { text-align: center; padding-bottom: 28px; margin-bottom: 28px; border-bottom: 2px solid var(--accent); }
+  .pl-company { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--accent); letter-spacing: -0.5px; }
+  .pl-doc-title { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-top: 4px; }
+  .pl-period { font-size: 12px; color: var(--text3); margin-top: 6px; }
+  .pl-section { margin-bottom: 20px; }
+  .pl-section-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); padding: 6px 0; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .pl-line { display: flex; justify-content: space-between; padding: 5px 0 5px 16px; font-size: 13px; color: var(--text2); border-bottom: 1px dotted var(--border); }
+  .pl-line:last-child { border-bottom: none; }
+  .pl-subtotal { display: flex; justify-content: space-between; padding: 8px 0; font-weight: 600; font-size: 13px; border-top: 1px solid var(--border2); margin-top: 4px; }
+  .pl-highlight { display: flex; justify-content: space-between; padding: 10px 14px; background: var(--accent-light); border-radius: var(--radius); margin: 12px 0; font-weight: 600; font-size: 14px; color: var(--accent); }
+  .pl-net { display: flex; justify-content: space-between; padding: 14px 16px; background: var(--accent); border-radius: var(--radius); font-family: 'DM Serif Display', serif; font-size: 20px; color: #fff; margin-top: 16px; }
+  .pl-net.loss { background: var(--red); }
+  .pl-footer { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); }
+  .amount-green { color: var(--accent); }
+  .amount-red { color: var(--red); }
+  .amount-gold { color: var(--gold); }
+
+  /* ── Pages ── */
+  .page { display: none; animation: fadeIn 0.2s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── Two-col grid ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+  /* ── Section header ── */
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .section-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; }
+
+  /* ── Toast ── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--accent); color: #fff; padding: 11px 18px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    box-shadow: var(--shadow-md); animation: toastIn 0.25s ease;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.error { background: var(--red); }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar, .topbar, .topbar-right, .btn, .modal-backdrop, .toast-container { display: none !important; }
+    .layout { display: block; }
+    .main { overflow: visible; }
+    .content { padding: 0; overflow: visible; }
+    .page { display: block !important; }
+    .page:not(#page-reports) { display: none !important; }
+    .pl-wrapper { box-shadow: none; border: none; padding: 20px; margin: 0; max-width: 100%; }
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">AURA APPAREL</div>
+      <div class="tagline">Accounting System</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <button class="nav-item active" onclick="navigate('dashboard')">
+        <span class="nav-icon">⊞</span> Dashboard
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Source Documents</div>
+      <button class="nav-item" onclick="navigate('invoices')">
+        <span class="nav-icon">◱</span> Invoices
+      </button>
+      <button class="nav-item" onclick="navigate('receipts')">
+        <span class="nav-icon">◰</span> Receipts
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Journals</div>
+      <button class="nav-item" onclick="navigate('sales-journal')">
+        <span class="nav-icon">↑</span> Sales Journal
+      </button>
+      <button class="nav-item" onclick="navigate('purchases-journal')">
+        <span class="nav-icon">↓</span> Purchases Journal
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Ledger</div>
+      <button class="nav-item" onclick="navigate('expenses')">
+        <span class="nav-icon">⊟</span> Expenses
+      </button>
+      <button class="nav-item" onclick="navigate('trial-balance')">
+        <span class="nav-icon">≡</span> Trial Balance
+      </button>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Reports</div>
+      <button class="nav-item" onclick="navigate('reports')">
+        <span class="nav-icon">◈</span> P&amp;L Statement
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      FY 2025 &nbsp;·&nbsp; AccoSys v1.0
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="page-title">Dashboard</h1>
+        <span class="topbar-date" id="topbar-date"></span>
+      </div>
+      <div class="topbar-right" id="topbar-actions"></div>
+    </header>
+
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div id="page-dashboard" class="page active">
+        <div class="metrics">
+          <div class="metric-card accent">
+            <div class="metric-label">Total Revenue</div>
+            <div class="metric-value" id="dash-revenue">₱0.00</div>
+            <div class="metric-sub">All invoices</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Expenses</div>
+            <div class="metric-value red" id="dash-expenses">₱0.00</div>
+            <div class="metric-sub">Purchases + operating</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Net Income</div>
+            <div class="metric-value" id="dash-net">₱0.00</div>
+            <div class="metric-sub" id="dash-net-sub">—</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Invoices</div>
+            <div class="metric-value gold" id="dash-count">0</div>
+            <div class="metric-sub">Source documents</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="section-header">
+              <span class="section-label">Recent Invoices</span>
+              <button class="btn btn-ghost btn-sm" onclick="navigate('invoices')">View all</button>
+            </div>
+            <div class="table-card">
+              <table class="data-table">
+                <thead><tr><th>Ref</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody id="dash-inv-tbody">
+                  <tr class="empty-row"><td colspan="4">No invoices yet</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-header">
+              <span class="section-label">Recent Expenses</span>
+              <button class="btn btn-ghost btn-sm" onclick="navigate('expenses')">View all</button>
+            </div>
+            <div class="table-card">
+              <table class="data-table">
+                <thead><tr><th>Date</th><th>Category</th><th>Amount</th></tr></thead>
+                <tbody id="dash-exp-tbody">
+                  <tr class="empty-row"><td colspan="3">No expenses yet</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INVOICES ── -->
+      <div id="page-invoices" class="page">
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>Invoice #</th><th>Date</th><th>Customer</th><th>Description</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+            <tbody id="invoices-tbody">
+              <tr class="empty-row"><td colspan="7">No invoices yet. Click "+ New Invoice" to add one.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── RECEIPTS ── -->
+      <div id="page-receipts" class="page">
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>Receipt #</th><th>Date</th><th>From</th><th>Description</th><th>Amount</th><th>Type</th><th></th></tr></thead>
+            <tbody id="receipts-tbody">
+              <tr class="empty-row"><td colspan="7">No receipts yet. Click "+ New Receipt" to add one.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── SALES JOURNAL ── -->
+      <div id="page-sales-journal" class="page">
+        <div id="sales-journal-list">
+          <div style="text-align:center;color:var(--text3);padding:60px;font-style:italic">Sales journal entries will appear here when invoices are created.</div>
+        </div>
+      </div>
+
+      <!-- ── PURCHASES JOURNAL ── -->
+      <div id="page-purchases-journal" class="page">
+        <div id="purchases-journal-list">
+          <div style="text-align:center;color:var(--text3);padding:60px;font-style:italic">Purchase journal entries will appear here when receipts are recorded.</div>
+        </div>
+      </div>
+
+      <!-- ── EXPENSES ── -->
+      <div id="page-expenses" class="page">
+        <div class="table-card">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Payment</th><th></th></tr></thead>
+            <tbody id="expenses-tbody">
+              <tr class="empty-row"><td colspan="6">No expenses yet. Click "+ Add Expense" to record one.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── TRIAL BALANCE ── -->
+      <div id="page-trial-balance" class="page">
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th style="text-align:right">Debit (₱)</th>
+                <th style="text-align:right">Credit (₱)</th>
+              </tr>
+            </thead>
+            <tbody id="tb-tbody">
+              <tr class="empty-row"><td colspan="3">Add transactions to generate trial balance.</td></tr>
+            </tbody>
+            <tfoot id="tb-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── P&L REPORT ── -->
+      <div id="page-reports" class="page">
+        <div class="pl-wrapper" id="pl-content">
+          <div style="text-align:center;color:var(--text3);padding:60px;font-style:italic">No data yet. Add invoices and expenses to generate the statement.</div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ── INVOICE MODAL ── -->
+<div class="modal-backdrop" id="modal-invoice">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Invoice</div>
+      <button class="modal-close" onclick="closeModal('modal-invoice')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Invoice #</label>
+        <input class="form-control" id="inv-ref" placeholder="INV-001">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-control" type="date" id="inv-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Customer Name</label>
+        <input class="form-control" id="inv-customer" placeholder="e.g. Juan dela Cruz">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₱)</label>
+        <input class="form-control" type="number" id="inv-amount" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Description</label>
+        <input class="form-control" id="inv-desc" placeholder="Services or goods description">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-control" id="inv-status">
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="overdue">Overdue</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-invoice')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInvoice()">Save Invoice</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RECEIPT MODAL ── -->
+<div class="modal-backdrop" id="modal-receipt">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Receipt</div>
+      <button class="modal-close" onclick="closeModal('modal-receipt')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Receipt #</label>
+        <input class="form-control" id="rec-ref" placeholder="REC-001">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-control" type="date" id="rec-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">From (Supplier / Payer)</label>
+        <input class="form-control" id="rec-from" placeholder="Supplier or payer name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₱)</label>
+        <input class="form-control" type="number" id="rec-amount" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Description</label>
+        <input class="form-control" id="rec-desc" placeholder="Purchase description">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-control" id="rec-type">
+          <option value="purchase">Purchase</option>
+          <option value="payment-received">Payment Received</option>
+          <option value="refund">Refund</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-receipt')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveReceipt()">Save Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EXPENSE MODAL ── -->
+<div class="modal-backdrop" id="modal-expense">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Expense</div>
+      <button class="modal-close" onclick="closeModal('modal-expense')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-control" type="date" id="exp-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-control" id="exp-category">
+          <option value="Utilities">Utilities</option>
+          <option value="Rent">Rent</option>
+          <option value="Salaries">Salaries</option>
+          <option value="Supplies">Supplies</option>
+          <option value="Transport">Transport</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Professional Fees">Professional Fees</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Description</label>
+        <input class="form-control" id="exp-desc" placeholder="Expense details">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (₱)</label>
+        <input class="form-control" type="number" id="exp-amount" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Method</label>
+        <select class="form-control" id="exp-method">
+          <option value="Cash">Cash</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Check">Check</option>
+          <option value="Credit Card">Credit Card</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-expense')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+const API = 'http://localhost:8000/api';
+
+/* ─── State (fallback if API offline) ─── */
+const local = { invoices: [], receipts: [], expenses: [], invCtr: 1, recCtr: 1 };
+let useAPI = false; // set true when Django is running
+
+/* ─── Helpers ─── */
+const fmt = n => '₱' + parseFloat(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN = n => parseFloat(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function toast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+async function apiFetch(path, opts={}) {
+  const res = await fetch(API + path, { headers:{'Content-Type':'application/json'}, ...opts });
+  if (!res.ok) throw new Error('API ' + res.status);
+  if (res.status === 204) return null;
+  return res.json();
+}
+const apiGet = p => apiFetch(p);
+const apiPost = (p,b) => apiFetch(p,{method:'POST',body:JSON.stringify(b)});
+const apiDel = p => apiFetch(p,{method:'DELETE'});
+
+/* ─── Navigation ─── */
+const pageTitles = {
+  'dashboard':'Dashboard','invoices':'Invoices','receipts':'Receipts',
+  'sales-journal':'Sales Journal','purchases-journal':'Purchases Journal',
+  'expenses':'Expenses','trial-balance':'Trial Balance','reports':'Profit & Loss Statement'
+};
+const pageActions = {
+  'dashboard':'',
+  'invoices':'<button class="btn btn-primary btn-sm" onclick="openModal(\'modal-invoice\')">+ New Invoice</button>',
+  'receipts':'<button class="btn btn-primary btn-sm" onclick="openModal(\'modal-receipt\')">+ New Receipt</button>',
+  'sales-journal':'','purchases-journal':'',
+  'expenses':'<button class="btn btn-primary btn-sm" onclick="openModal(\'modal-expense\')">+ Add Expense</button>',
+  'trial-balance':'',
+  'reports':'<button class="btn btn-print btn-sm" onclick="window.print()">🖨 Print / PDF</button>'
+};
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelector(`[onclick="navigate('${page}')"]`).classList.add('active');
+  document.getElementById('page-title').textContent = pageTitles[page];
+  document.getElementById('topbar-actions').innerHTML = pageActions[page];
+  if (page==='trial-balance') renderTrialBalance();
+  if (page==='reports') renderPL();
+  if (page==='dashboard') renderDashboard();
+  if (page==='sales-journal') renderSalesJournal();
+  if (page==='purchases-journal') renderPurchasesJournal();
+}
+
+/* ─── Modals ─── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  const today = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('#'+id+' input[type="date"]').forEach(el => { if(!el.value) el.value=today; });
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+/* ─── Save / Delete wrappers ─── */
+async function saveInvoice() {
+  const payload = {
+    ref: document.getElementById('inv-ref').value || ('INV-'+String(local.invCtr).padStart(3,'0')),
+    date: document.getElementById('inv-date').value,
+    customer: document.getElementById('inv-customer').value,
+    description: document.getElementById('inv-desc').value,
+    amount: parseFloat(document.getElementById('inv-amount').value)||0,
+    status: document.getElementById('inv-status').value
+  };
+  if (!payload.customer || !payload.amount) { toast('Please fill in customer and amount.','error'); return; }
+  if (useAPI) {
+    try { await apiPost('/invoices/', payload); toast('Invoice saved.'); }
+    catch(e) { toast('Save failed — check Django server.','error'); return; }
+  } else {
+    payload.id = Date.now(); local.invoices.unshift(payload); local.invCtr++;
+    toast('Invoice saved (local mode).');
+  }
+  closeModal('modal-invoice');
+  document.querySelectorAll('#modal-invoice input:not([type=date])').forEach(el=>el.value='');
+  renderInvoices(); renderSalesJournal(); renderDashboard();
+}
+
+async function deleteInvoice(id) {
+  if (!confirm('Delete this invoice?')) return;
+  if (useAPI) { try { await apiDel('/invoices/'+id+'/'); } catch(e){} }
+  else { local.invoices = local.invoices.filter(i=>i.id!==id); }
+  toast('Invoice deleted.');
+  renderInvoices(); renderSalesJournal(); renderDashboard();
+}
+
+async function saveReceipt() {
+  const payload = {
+    ref: document.getElementById('rec-ref').value || ('REC-'+String(local.recCtr).padStart(3,'0')),
+    date: document.getElementById('rec-date').value,
+    source: document.getElementById('rec-from').value,
+    description: document.getElementById('rec-desc').value,
+    amount: parseFloat(document.getElementById('rec-amount').value)||0,
+    receipt_type: document.getElementById('rec-type').value
+  };
+  if (!payload.source || !payload.amount) { toast('Please fill in source and amount.','error'); return; }
+  if (useAPI) {
+    try { await apiPost('/receipts/', payload); toast('Receipt saved.'); }
+    catch(e) { toast('Save failed.','error'); return; }
+  } else {
+    payload.id = Date.now(); local.receipts.unshift(payload); local.recCtr++;
+    toast('Receipt saved (local mode).');
+  }
+  closeModal('modal-receipt');
+  document.querySelectorAll('#modal-receipt input:not([type=date])').forEach(el=>el.value='');
+  renderReceipts(); renderPurchasesJournal(); renderDashboard();
+}
+
+async function deleteReceipt(id) {
+  if (!confirm('Delete this receipt?')) return;
+  if (useAPI) { try { await apiDel('/receipts/'+id+'/'); } catch(e){} }
+  else { local.receipts = local.receipts.filter(r=>r.id!==id); }
+  toast('Receipt deleted.');
+  renderReceipts(); renderPurchasesJournal(); renderDashboard();
+}
+
+async function saveExpense() {
+  const payload = {
+    date: document.getElementById('exp-date').value,
+    category: document.getElementById('exp-category').value,
+    description: document.getElementById('exp-desc').value,
+    amount: parseFloat(document.getElementById('exp-amount').value)||0,
+    payment_method: document.getElementById('exp-method').value
+  };
+  if (!payload.amount) { toast('Please enter an amount.','error'); return; }
+  if (useAPI) {
+    try { await apiPost('/expenses/', payload); toast('Expense saved.'); }
+    catch(e) { toast('Save failed.','error'); return; }
+  } else {
+    payload.id = Date.now(); local.expenses.unshift(payload);
+    toast('Expense saved (local mode).');
+  }
+  closeModal('modal-expense');
+  document.querySelectorAll('#modal-expense input:not([type=date])').forEach(el=>el.value='');
+  renderExpenses(); renderDashboard();
+}
+
+async function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  if (useAPI) { try { await apiDel('/expenses/'+id+'/'); } catch(e){} }
+  else { local.expenses = local.expenses.filter(e=>e.id!==id); }
+  toast('Expense deleted.');
+  renderExpenses(); renderDashboard();
+}
+
+/* ─── Data fetch helpers ─── */
+async function getInvoices() { return useAPI ? apiGet('/invoices/') : local.invoices; }
+async function getReceipts() { return useAPI ? apiGet('/receipts/') : local.receipts; }
+async function getExpenses() { return useAPI ? apiGet('/expenses/') : local.expenses; }
+
+/* ─── Render: Invoices ─── */
+async function renderInvoices() {
+  const data = await getInvoices();
+  const tb = document.getElementById('invoices-tbody');
+  tb.innerHTML = data.length ? data.map(i=>`
+    <tr>
+      <td><strong>${i.ref}</strong></td>
+      <td>${i.date}</td>
+      <td>${i.customer}</td>
+      <td class="muted">${i.description||'—'}</td>
+      <td class="amount ${i.status==='paid'?'amount-green':''}">${fmt(i.amount)}</td>
+      <td><span class="badge badge-${i.status}">${i.status}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteInvoice(${i.id})">Delete</button></td>
+    </tr>`).join('')
+  : '<tr class="empty-row"><td colspan="7">No invoices yet.</td></tr>';
+}
+
+/* ─── Render: Receipts ─── */
+async function renderReceipts() {
+  const data = await getReceipts();
+  const tb = document.getElementById('receipts-tbody');
+  tb.innerHTML = data.length ? data.map(r=>`
+    <tr>
+      <td><strong>${r.ref}</strong></td>
+      <td>${r.date}</td>
+      <td>${r.source||r.from}</td>
+      <td class="muted">${r.description||'—'}</td>
+      <td class="amount">${fmt(r.amount)}</td>
+      <td><span class="badge badge-info">${r.receipt_type}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteReceipt(${r.id})">Delete</button></td>
+    </tr>`).join('')
+  : '<tr class="empty-row"><td colspan="7">No receipts yet.</td></tr>';
+}
+
+/* ─── Render: Expenses ─── */
+async function renderExpenses() {
+  const data = await getExpenses();
+  const tb = document.getElementById('expenses-tbody');
+  tb.innerHTML = data.length ? data.map(e=>`
+    <tr>
+      <td>${e.date}</td>
+      <td><span class="badge badge-gray">${e.category}</span></td>
+      <td class="muted">${e.description||'—'}</td>
+      <td class="amount amount-red">${fmt(e.amount)}</td>
+      <td class="muted">${e.payment_method}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">Delete</button></td>
+    </tr>`).join('')
+  : '<tr class="empty-row"><td colspan="6">No expenses yet.</td></tr>';
+}
+
+/* ─── Render: Sales Journal ─── */
+async function renderSalesJournal() {
+  const data = await getInvoices();
+  const el = document.getElementById('sales-journal-list');
+  el.innerHTML = data.length ? data.map(i=>`
+    <div class="journal-entry">
+      <div class="je-head">
+        <div>
+          <div class="je-ref">${i.ref}</div>
+          <div class="je-meta">${i.date} &nbsp;·&nbsp; ${i.customer}</div>
+        </div>
+        <span class="badge badge-${i.status}">${i.status}</span>
+      </div>
+      ${i.description ? `<div style="font-size:12px;color:var(--text3);margin-bottom:10px">${i.description}</div>` : ''}
+      <div class="je-lines">
+        <div class="je-row">
+          <span class="je-account">Accounts Receivable / Cash</span>
+          <span style="display:flex;gap:16px;align-items:center">
+            <span class="je-dr">${fmt(i.amount)}</span>
+            <span class="je-tag">DR</span>
+          </span>
+        </div>
+        <div class="je-row">
+          <span class="je-account indent">Sales Revenue</span>
+          <span style="display:flex;gap:16px;align-items:center">
+            <span class="je-cr">${fmt(i.amount)}</span>
+            <span class="je-tag">CR</span>
+          </span>
+        </div>
+      </div>
+    </div>`).join('')
+  : '<div style="text-align:center;color:var(--text3);padding:60px;font-style:italic">No sales entries yet.</div>';
+}
+
+/* ─── Render: Purchases Journal ─── */
+async function renderPurchasesJournal() {
+  const data = await getReceipts();
+  const el = document.getElementById('purchases-journal-list');
+  el.innerHTML = data.length ? data.map(r=>`
+    <div class="journal-entry">
+      <div class="je-head">
+        <div>
+          <div class="je-ref">${r.ref}</div>
+          <div class="je-meta">${r.date} &nbsp;·&nbsp; ${r.source||r.from}</div>
+        </div>
+        <span class="badge badge-info">${r.receipt_type}</span>
+      </div>
+      ${r.description ? `<div style="font-size:12px;color:var(--text3);margin-bottom:10px">${r.description}</div>` : ''}
+      <div class="je-lines">
+        <div class="je-row">
+          <span class="je-account">Purchases / Inventory</span>
+          <span style="display:flex;gap:16px;align-items:center">
+            <span class="je-dr">${fmt(r.amount)}</span>
+            <span class="je-tag">DR</span>
+          </span>
+        </div>
+        <div class="je-row">
+          <span class="je-account indent">Accounts Payable / Cash</span>
+          <span style="display:flex;gap:16px;align-items:center">
+            <span class="je-cr">${fmt(r.amount)}</span>
+            <span class="je-tag">CR</span>
+          </span>
+        </div>
+      </div>
+    </div>`).join('')
+  : '<div style="text-align:center;color:var(--text3);padding:60px;font-style:italic">No purchase entries yet.</div>';
+}
+
+/* ─── Render: Trial Balance ─── */
+async function renderTrialBalance() {
+  const [invoices, receipts, expenses] = await Promise.all([getInvoices(), getReceipts(), getExpenses()]);
+  const totalSales = invoices.reduce((s,i)=>s+parseFloat(i.amount),0);
+  const totalPurch = receipts.reduce((s,r)=>s+parseFloat(r.amount),0);
+  const totalExp   = expenses.reduce((s,e)=>s+parseFloat(e.amount),0);
+  const arBalance  = invoices.filter(i=>i.status!=='paid').reduce((s,i)=>s+parseFloat(i.amount),0);
+  const cash = totalSales - totalPurch - totalExp;
+
+  const expByCat = {};
+  expenses.forEach(e=>{ expByCat[e.category]=(expByCat[e.category]||0)+parseFloat(e.amount); });
+
+  const accounts = [
+    {name:'Cash / Bank', debit:Math.max(cash,0), credit:Math.max(-cash,0)},
+    {name:'Accounts Receivable', debit:arBalance, credit:0},
+    {name:'Accounts Payable', debit:0, credit:totalPurch},
+    {name:'Sales Revenue', debit:0, credit:totalSales},
+    {name:'Purchases', debit:totalPurch, credit:0},
+    ...Object.entries(expByCat).map(([k,v])=>({name:k+' Expense',debit:v,credit:0}))
+  ].filter(a=>a.debit||a.credit);
+
+  const totDR = accounts.reduce((s,a)=>s+a.debit,0);
+  const totCR = accounts.reduce((s,a)=>s+a.credit,0);
+
+  const tb = document.getElementById('tb-tbody');
+  tb.innerHTML = accounts.length
+    ? accounts.map(a=>`<tr>
+        <td>${a.name}</td>
+        <td style="text-align:right">${a.debit?fmtN(a.debit):''}</td>
+        <td style="text-align:right">${a.credit?fmtN(a.credit):''}</td>
+      </tr>`).join('')
+    : '<tr class="empty-row"><td colspan="3">Add transactions to generate trial balance.</td></tr>';
+
+  document.getElementById('tb-tfoot').innerHTML = `
+    <tr class="tb-total-row">
+      <td style="padding:12px 16px">Total</td>
+      <td style="text-align:right;padding:12px 16px">${fmtN(totDR)}</td>
+      <td style="text-align:right;padding:12px 16px">${fmtN(totCR)}</td>
+    </tr>`;
+}
+
+/* ─── Render: Dashboard ─── */
+async function renderDashboard() {
+  const [invoices, receipts, expenses] = await Promise.all([getInvoices(), getReceipts(), getExpenses()]);
+  const totalRev  = invoices.reduce((s,i)=>s+parseFloat(i.amount),0);
+  const totalPurch = receipts.reduce((s,r)=>s+parseFloat(r.amount),0);
+  const totalExp  = expenses.reduce((s,e)=>s+parseFloat(e.amount),0);
+  const totalCost = totalPurch + totalExp;
+  const net = totalRev - totalCost;
+
+  document.getElementById('dash-revenue').textContent = fmt(totalRev);
+  document.getElementById('dash-expenses').textContent = fmt(totalCost);
+  document.getElementById('dash-count').textContent = invoices.length;
+  const netEl = document.getElementById('dash-net');
+  netEl.textContent = fmt(net);
+  netEl.className = 'metric-value ' + (net>=0?'green':'red');
+  document.getElementById('dash-net-sub').textContent = net>=0?'Profitable':'Operating at a loss';
+
+  const invTb = document.getElementById('dash-inv-tbody');
+  const ri = invoices.slice(0,5);
+  invTb.innerHTML = ri.length ? ri.map(i=>`<tr>
+    <td><strong>${i.ref}</strong></td><td>${i.customer}</td>
+    <td class="amount">${fmt(i.amount)}</td>
+    <td><span class="badge badge-${i.status}">${i.status}</span></td></tr>`).join('')
+  : '<tr class="empty-row"><td colspan="4">None</td></tr>';
+
+  const expTb = document.getElementById('dash-exp-tbody');
+  const re = expenses.slice(0,5);
+  expTb.innerHTML = re.length ? re.map(e=>`<tr>
+    <td>${e.date}</td><td><span class="badge badge-gray">${e.category}</span></td>
+    <td class="amount amount-red">${fmt(e.amount)}</td></tr>`).join('')
+  : '<tr class="empty-row"><td colspan="3">None</td></tr>';
+}
+
+/* ─── Render: P&L ─── */
+async function renderPL() {
+  const [invoices, receipts, expenses] = await Promise.all([getInvoices(), getReceipts(), getExpenses()]);
+  const totalSales = invoices.reduce((s,i)=>s+parseFloat(i.amount),0);
+  const totalPurch = receipts.reduce((s,r)=>s+parseFloat(r.amount),0);
+  const grossProfit = totalSales - totalPurch;
+  const expByCat = {};
+  expenses.forEach(e=>{ expByCat[e.category]=(expByCat[e.category]||0)+parseFloat(e.amount); });
+  const totalExp = expenses.reduce((s,e)=>s+parseFloat(e.amount),0);
+  const netIncome = grossProfit - totalExp;
+  const today = new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const isLoss = netIncome < 0;
+
+  document.getElementById('pl-content').innerHTML = `
+    <div class="pl-letterhead">
+      <div class="pl-company">AccoSys</div>
+      <div class="pl-doc-title">Profit & Loss Statement</div>
+      <div class="pl-period">For the period ending ${today}</div>
+    </div>
+
+    <div class="pl-section">
+      <div class="pl-section-head">Revenue</div>
+      <div class="pl-line"><span>Sales Revenue</span><span class="amount-green">${fmt(totalSales)}</span></div>
+      <div class="pl-subtotal"><span>Total Revenue</span><span class="amount-green">${fmt(totalSales)}</span></div>
+    </div>
+
+    <div class="pl-section">
+      <div class="pl-section-head">Cost of Goods Sold</div>
+      <div class="pl-line"><span>Purchases</span><span>${fmt(totalPurch)}</span></div>
+      <div class="pl-subtotal"><span>Total Cost of Sales</span><span>${fmt(totalPurch)}</span></div>
+    </div>
+
+    <div class="pl-highlight">
+      <span>Gross Profit</span>
+      <span class="${grossProfit>=0?'amount-green':'amount-red'}">${fmt(grossProfit)}</span>
+    </div>
+
+    <div class="pl-section">
+      <div class="pl-section-head">Operating Expenses</div>
+      ${Object.entries(expByCat).map(([k,v])=>`<div class="pl-line"><span>${k}</span><span>${fmt(v)}</span></div>`).join('') || '<div class="pl-line"><span style="font-style:italic;color:var(--text3)">No expenses recorded</span><span>—</span></div>'}
+      <div class="pl-subtotal"><span>Total Operating Expenses</span><span class="amount-red">${fmt(totalExp)}</span></div>
+    </div>
+
+    <div class="pl-net ${isLoss?'loss':''}">
+      <span>Net ${isLoss?'Loss':'Income'}</span>
+      <span>${fmt(Math.abs(netIncome))}</span>
+    </div>
+
+    <div class="pl-footer">
+      This statement was generated automatically by AccoSys &nbsp;·&nbsp; ${today}
+    </div>`;
+}
+
+/* ─── Init ─── */
+(async function init() {
+  const d = new Date();
+  document.getElementById('topbar-date').textContent =
+    d.toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  // Try to reach Django API
+  try {
+    await fetch(API + '/invoices/', {signal: AbortSignal.timeout(1500)});
+    useAPI = true;
+    toast('Connected to Django backend.');
+  } catch {
+    useAPI = false;
+    toast('Running in local mode — start Django to enable persistence.');
+  }
+
+  renderDashboard();
+})();
+</script>
+</body>
+</html>
